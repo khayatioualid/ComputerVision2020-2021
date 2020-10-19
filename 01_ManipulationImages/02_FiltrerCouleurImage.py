@@ -16,12 +16,21 @@ def filtrerCouleurPython(source,r,g,b):
                 result[x, y]=(0,0,0)
     return result
 
+def filtrerCouleur(source,r,g,b):
+    min=np.uint8([b,g,r])
+    max = np.uint8([b, g, r])
+    mask=cv2.inRange(source,min,max)
+    cv2.imshow('Image mask', mask)
+    result=cv2.bitwise_and(source,source,mask=mask);
+    return result
 
 
 
 img=cv2.imread("../Data/cercles.png" )
 #extraction des dimensions
-imgFiltre=filtrerCouleurPython(img,237,28,36)
+#methode 1 avec code python tres lente !!!!
+#imgFiltre=filtrerCouleurPython(img,237,28,36)
+imgFiltre=filtrerCouleur(img,237,28,36)
 
 
 cv2.imshow('Image Originale',img)
