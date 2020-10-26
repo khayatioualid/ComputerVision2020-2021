@@ -21,23 +21,32 @@ def filtrerCouleurPython(source,r,g,b):
 
 def filtrerCouleur(source,r,g,b):
     #plus efficace car le travail est fait dans le code opencv qui est en C et C++
-    min=np.uint8([b,g,r])
-    max = np.uint8([b, g, r])
+    min=np.array([b,g,r])
+    max = np.array([b, g, r])
     mask=cv2.inRange(source,min,max)
     cv2.imshow('Image mask', mask)
     result=cv2.bitwise_and(source,source,mask=mask);
     return result
 
 def filtrerCouleurHSV(source,r,g,b):
+    imgHSV = cv2.cvtColor(source, cv2.COLOR_BGR2HSV)
+    imgHSVEgalise = egaliserH(imgHSV)
     bgrColors=np.uint8([[[b,g,r ]]])
     hsvColors = cv2.cvtColor(bgrColors, cv2.COLOR_BGR2HSV)
     h,s,v=hsvColors[0,0]
+    print((h,s,v))
+    v=100
+    intervalH=10
+    intervalS=50
     #plus efficace car le travail est fait dans le code opencv qui est en C et C++
-    min=np.uint8([h-10,s-10,v-1])
-    max = np.uint8([h+10, s+10, v+1])
-    mask=cv2.inRange(source,min,max)
+    min=np.array([h-intervalH,s-intervalS,v])
+    max = np.array([h+intervalH, s+intervalS, v])
+    print((min,max))
+    mask=cv2.inRange(imgHSVEgalise,min,max)
     cv2.imshow('Image mask HSV', mask)
     result=cv2.bitwise_and(source,source,mask=mask);
+    cv2.imshow('Image HSV', imgHSV)
+    cv2.imshow('Image HSV Egalise', imgHSVEgalise)
     return result
 
 def egaliserH(source):
@@ -53,15 +62,13 @@ img=cv2.imread("../Data/tomates.jpg" )
 #extraction des dimensions
 #methode 1 avec code python tres lente !!!!
 #imgFiltre=filtrerCouleurPython(img,237,28,36)
-imgFiltre=filtrerCouleur(img,190,24,24)
+color=(190,24,24)
+imgFiltre=filtrerCouleur(img,*color)
 
-imgHSV=cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
-imgHSVEgalise=egaliserH(imgHSV)
-imgFiltreHSV=filtrerCouleurHSV(imgHSVEgalise,190,24,24)
+imgFiltreHSV=filtrerCouleurHSV(img,*color)
 
 cv2.imshow('Image Originale',img)
-cv2.imshow('Image HSV',imgHSV)
-cv2.imshow('Image HSV Egalise',imgHSVEgalise)
+
 
 cv2.imshow('Image Filtree',imgFiltre)
 cv2.imshow('Image Filtree HSV',imgFiltreHSV)
