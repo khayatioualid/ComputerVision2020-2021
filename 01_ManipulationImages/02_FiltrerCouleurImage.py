@@ -6,17 +6,21 @@
 import cv2
 import numpy as np
 
-def filtrerCouleurPython(source,r,g,b):
+def filtrerCouleurPython(source,r,g,b):  
+# probleme de lenteur car le travail est fait dans python
     result=source.copy()
     colonnes, lignes, couleurs = result.shape
     for x in range(colonnes):
         for y in range(lignes):
             # attention opencv représente les pixels en BGR et non en RGB
-            if not((result[x,y][0]==b)and(result[x,y][1]==g)and(result[x,y][2]==r)):
+            #if not((result[x,y][0]==b)and(result[x,y][1]==g)and(result[x,y][2]==r)):
+            #une deuxieme façon de faire la comparaison
+            if not(result[x, y] == (b, g, r)).all():
                 result[x, y]=(0,0,0)
     return result
 
 def filtrerCouleur(source,r,g,b):
+    #plus efficace car le travail est fait dans le code opencv qui est en C et C++
     min=np.uint8([b,g,r])
     max = np.uint8([b, g, r])
     mask=cv2.inRange(source,min,max)
