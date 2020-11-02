@@ -29,13 +29,15 @@ def filtrerCouleur(source,r,g,b):
     return result
 
 def filtrerCouleurHSV(source,r,g,b):
+    vEgalise = 100
     imgHSV = cv2.cvtColor(source, cv2.COLOR_BGR2HSV)
-    imgHSVEgalise = egaliserH(imgHSV)
+    imgHSVEgalise = egaliserV(imgHSV,vEgalise)
     bgrColors=np.uint8([[[b,g,r ]]])
     hsvColors = cv2.cvtColor(bgrColors, cv2.COLOR_BGR2HSV)
     h,s,v=hsvColors[0,0]
+    v=vEgalise
     print((h,s,v))
-    v=100
+
     intervalH=10
     intervalS=50
     #plus efficace car le travail est fait dans le code opencv qui est en C et C++
@@ -49,12 +51,12 @@ def filtrerCouleurHSV(source,r,g,b):
     cv2.imshow('Image HSV Egalise', imgHSVEgalise)
     return result
 
-def egaliserH(source):
+def egaliserV(source,V):
     result = source.copy()
     colonnes, lignes, couleurs = result.shape
     for x in range(colonnes):
         for y in range(lignes):
-            result[x, y][2] = 100
+            result[x, y][2] = V
     return result
 
 
