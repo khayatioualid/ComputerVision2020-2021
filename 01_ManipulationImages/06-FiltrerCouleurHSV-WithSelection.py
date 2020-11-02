@@ -85,8 +85,11 @@ def egaliserV(source,V):
             result[x, y][2] = V
     return result
 
+#exemple avec la balle
+#img=cv2.imread("../Data/objets2.jpg" )
 
-img=cv2.imread("../Data/objets2.jpg" )
+#exemple avec une main
+img=cv2.imread("../Data/main2.jpg" )
 
 colonnes,lignes,couleurs=img.shape
 ratio=25
