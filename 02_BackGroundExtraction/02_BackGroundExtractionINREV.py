@@ -12,11 +12,14 @@ def difference(source,cible):
     return result
 
 class BackgroundSubtractorINREV:
-    def __init__(self):
+    def __init__(self,updateRatio):
         self.lastFrame=None
+        self.backGroundModel=None
+        self.updateRatio=updateRatio
     def apply(self,frame):
         if np.shape(self.lastFrame)==():
             self.lastFrame=frame
+            self.backGroundModel=frame
             return None
         self.lastFrameGray = bgrTogray(self.lastFrame)
         self.frameGray = bgrTogray(frame)
@@ -38,6 +41,20 @@ class BackgroundSubtractorINREV:
             cv2.rectangle(mask, (int(x), int(y)), \
                           (int(x + w), int(y + h)),
                           (255,), -1)
+        partialBackGround=frame.copy()
+        partialForeGround = frame.copy()
+        maskBackGround=cv2.bitwise_not(mask)
+        partialBackGround = cv2.bitwise_and(partialBackGround, partialBackGround, mask=maskBackGround)
+        partialForeGround = cv2.bitwise_and(partialForeGround, partialForeGround, mask=mask)
+
+        cv2.imshow("mask", mask)
+        cv2.imshow("maskBackGround", maskBackGround)
+        cv2.imshow("partialBackGround", partialBackGround)
+        cv2.imshow("partialForeGround", partialForeGround)
+
+        self.backGroundModel = cv2.addWeighted(self.backGroundModel, 1-self.updateRatio, partialBackGround, self.updateRatio, 0)
+
+        cv2.imshow("backGroundModel", self.backGroundModel)
 
         cv2.imshow("contoursImg", contoursImg)
         return mask
@@ -50,7 +67,7 @@ class BackgroundSubtractorINREV:
 #methode 2
 #subtractor=cv2.createBackgroundSubtractorKNN(history=20,dist2Threshold =400,detectShadows=False)
 #methode 3
-subtractor=BackgroundSubtractorINREV()
+subtractor=BackgroundSubtractorINREV(0.01)
 
 cap=cv2.VideoCapture("../Data/Trafic autoroutier A15 (Partie 2).mp4")
 while True:
@@ -59,7 +76,6 @@ while True:
     if np.shape(mask) == ():
         continue
     cv2.imshow("frame", frame)
-    cv2.imshow("mask", mask)
 
     key=cv2.waitKey(30)
     if key==27:
