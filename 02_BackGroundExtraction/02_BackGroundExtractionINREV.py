@@ -57,7 +57,11 @@ class BackgroundSubtractorINREV:
         cv2.imshow("backGroundModel", self.backGroundModel)
 
         cv2.imshow("contoursImg", contoursImg)
-        return mask
+
+        self.backGroundModelGray=bgrTogray(self.backGroundModel)
+        result = difference(self.frameGray, self.backGroundModelGray)
+
+        return result
 
 
 
@@ -67,15 +71,17 @@ class BackgroundSubtractorINREV:
 #methode 2
 #subtractor=cv2.createBackgroundSubtractorKNN(history=20,dist2Threshold =400,detectShadows=False)
 #methode 3
-subtractor=BackgroundSubtractorINREV(0.01)
+subtractor=BackgroundSubtractorINREV(0.4)
 
 cap=cv2.VideoCapture("../Data/Trafic autoroutier A15 (Partie 2).mp4")
 while True:
     _, frame=cap.read()
-    mask=subtractor.apply(frame)
-    if np.shape(mask) == ():
+    maskObjets=subtractor.apply(frame)
+    if np.shape(maskObjets) == ():
         continue
     cv2.imshow("frame", frame)
+
+    cv2.imshow("maskObjets", maskObjets)
 
     key=cv2.waitKey(30)
     if key==27:
