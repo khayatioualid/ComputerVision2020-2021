@@ -16,10 +16,26 @@ def filtrerNonQuadrilateres(contours):
             result.append(approx)
     return result
 
+def SelectBiggest(contours):
+
+    biggest=None
+    biggestSurface = 0
+    for contour in contours:
+        surface = cv2.contourArea(contour)
+        if surface>biggestSurface:
+            biggest=contour
+            biggestSurface=surface
+    return [biggest]
+
 def reorder(myPoints):
+    print("myPoints originaux (4,1,2) : ", myPoints)
+    print("myPoints.shape : ", myPoints.shape)
+
     myPoints = myPoints.reshape((4, 2))
+    print("myPoints (4.2): ", myPoints)
     myPointsNew = np.zeros((4, 1, 2), dtype=np.int32)
     add = myPoints.sum(1)
+    print("myPoints.sum(1) : ", myPoints.sum(1))
 
     myPointsNew[0] = myPoints[np.argmin(add)]
     myPointsNew[3] = myPoints[np.argmax(add)]
@@ -29,20 +45,34 @@ def reorder(myPoints):
 
     return myPointsNew
 
-def ExtractsDocuments(imageOriginaleResized,imageOriginaleResizedContour,contoursCandidats):
+def ExtractsDocuments(imageOriginale,imageOriginaleResizedContour,contoursCandidats,ratio):
     result=[]
     print(imageOriginaleResized.shape)
-    heightImg,widthImg,_=imageOriginaleResized.shape;
+    heightImg,widthImg,_=imageOriginale.shape;
     for contour in contoursCandidats:
         contour=reorder(contour)
         cv2.drawContours(imageOriginaleResizedContour, contour, -1, (255, 0, 0), 20)
         pts1 = np.float32(contour)  # PREPARE POINTS FOR WARP
+        for i in range(len(pts1)):
+            pts1[i]=pts1[i]*(100/ratio)
         pts2 = np.float32([[0, 0], [widthImg, 0], [0, heightImg], [widthImg, heightImg]])  # PREPARE POINTS FOR WARP
         matrix = cv2.getPerspectiveTransform(pts1, pts2)
-        imgWarpColored = cv2.warpPerspective(imageOriginaleResized, matrix, (widthImg, heightImg))
-        result.append(imgWarpColored)
+        imgWarpColored = cv2.warpPerspective(imageOriginale, matrix, (widthImg, heightImg))
+        imgWarpGray=cv2.cvtColor(imgWarpColored, cv2.COLOR_BGR2GRAY)
+        imgWarpGray=cv2.adaptiveThreshold(imgWarpGray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
+                             cv2.THRESH_BINARY, 5, 2)
+        kernel = np.ones((3, 3))
+        """
+        for i in range(1):
+            #imgWarpGray = cv2.dilate(imgWarpGray, kernel, iterations=1)
+            imgWarpGray = cv2.erode(imgWarpGray, kernel, iterations=1)
+        """
+        result.append([imgWarpColored,imgWarpGray])
     for i in range(len(result)):
-        cv2.imshow("Extracted document "+str(i),result[i])
+        cv2.imshow("Extracted document colored "+str(i),result[i][0])
+        cv2.imshow("Extracted document gray " + str(i), result[i][1])
+        cv2.imwrite("./Scanned/DocumentColored"+str(i)+".jpg",result[i][0])
+        cv2.imwrite("./Scanned/DocumentGray" + str(i) + ".jpg", result[i][1])
     return result
 
 print(cv2.version.opencv_version)
@@ -68,9 +98,10 @@ imageOriginaleResizedContour=imageOriginaleResized.copy()
 cv2.drawContours(imageOriginaleResizedContour,contours,-1,(0,255,0),3)
 
 contoursCandidats=filtrerNonQuadrilateres(contours)
+contoursCandidats=SelectBiggest(contoursCandidats)
 cv2.drawContours(imageOriginaleResizedContour,contoursCandidats,-1,(0,0,255),2)
 
-ExtractsDocuments(imageOriginaleResized,imageOriginaleResizedContour,contoursCandidats)
+ExtractsDocuments(imageOriginale,imageOriginaleResizedContour,contoursCandidats,ratio)
 
 cv2.imshow("imageOriginaleResized",imageOriginaleResized)
 cv2.imshow("imageOriginaleResizedGray",imageOriginaleResizedGray)
