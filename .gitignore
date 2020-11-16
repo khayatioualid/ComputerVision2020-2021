@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 01_ManipulationImages/.idea/
 .idea/
+03_DocumentScanner/Scanned/
